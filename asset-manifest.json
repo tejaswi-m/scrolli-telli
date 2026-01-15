@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/scrolli-telli/static/css/main.c339a10d.css",
-    "main.js": "/scrolli-telli/static/js/main.68c80e34.js",
+    "main.js": "/scrolli-telli/static/js/main.390e3ebe.js",
     "index.html": "/scrolli-telli/index.html",
     "main.c339a10d.css.map": "/scrolli-telli/static/css/main.c339a10d.css.map",
-    "main.68c80e34.js.map": "/scrolli-telli/static/js/main.68c80e34.js.map"
+    "main.390e3ebe.js.map": "/scrolli-telli/static/js/main.390e3ebe.js.map"
   },
   "entrypoints": [
     "static/css/main.c339a10d.css",
-    "static/js/main.68c80e34.js"
+    "static/js/main.390e3ebe.js"
   ]
 }
