@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./EditPage.css";
 
-<<<<<<< HEAD
-=======
 const escapeHtml = (text) => {
   const div = document.createElement("div");
   div.textContent = text;
@@ -54,7 +52,6 @@ const sanitizeRichText = (html) => {
   clean(template.content);
   return template.innerHTML;
 };
->>>>>>> 714a100 (Tamara's feedback changes)
 
 function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDelete }) {
   const [imageSrc, setImageSrc] = useState(initialImage);
@@ -65,18 +62,13 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
   const [textContent, setTextContent] = useState("");
   const [blurAmount, setBlurAmount] = useState(2);
   const [deleted, setDeleted] = useState(false);
-<<<<<<< HEAD
-=======
   const [showEnlarged, setShowEnlarged] = useState(false);
   const [modalZoom, setModalZoom] = useState(2);
->>>>>>> 714a100 (Tamara's feedback changes)
 
   const baseImgRef = useRef(null);
   const blurCanvasRef = useRef(null);
   const drawCanvasRef = useRef(null);
   const replaceInputRef = useRef(null);
-<<<<<<< HEAD
-=======
   const modalCanvasRef = useRef(null);
   const modalContainerRef = useRef(null);
   const editableRef = useRef(null);
@@ -193,7 +185,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
     }
     setTextContent(sanitized);
   };
->>>>>>> 714a100 (Tamara's feedback changes)
 
   useEffect(() => {
     if (baseImgRef.current && baseImgRef.current.complete) {
@@ -332,8 +323,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
     ctx.clearRect(0, 0, drawCanvasRef.current.width, drawCanvasRef.current.height);
   };
 
-<<<<<<< HEAD
-=======
   const renderModalCanvas = () => {
     requestAnimationFrame(() => {
       if (!modalCanvasRef.current || !baseImgRef.current || !blurCanvasRef.current || !currentShape) return;
@@ -411,7 +400,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
     setModalZoom((z) => Math.max(MIN_MODAL_ZOOM, +(z - 0.5).toFixed(1)));
   };
 
->>>>>>> 714a100 (Tamara's feedback changes)
   const handleReplaceImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -427,12 +415,9 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
     if (window.confirm("Are you sure you want to remove the image from this section? This will create a text-only section.")) {
       setImageSrc(null);
       setCurrentShape(null);
-<<<<<<< HEAD
-=======
       setDrawMode(null);
       setShowEnlarged(false);
       setBlurAmount(2);
->>>>>>> 714a100 (Tamara's feedback changes)
     }
   };
 
@@ -469,13 +454,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
         </div>
       </div>
 
-<<<<<<< HEAD
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
-        <div>
-          {imageSrc && (
-            <div style={{ position: "relative", marginBottom: "15px" }}>
-              <div style={{ position: "relative", display: "inline-block" }}>
-=======
       <div style={{ display: "grid", gridTemplateColumns: imageSrc ? "2fr 1fr" : "1fr", gap: "20px" }}>
         <div>
           {imageSrc && (
@@ -487,7 +465,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
                 }}
                 title={currentShape ? "Click to view selected area" : ""}
               >
->>>>>>> 714a100 (Tamara's feedback changes)
                 <img
                   ref={baseImgRef}
                   src={imageSrc}
@@ -504,44 +481,13 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
-<<<<<<< HEAD
-                  style={{ position: "absolute", top: 0, left: 0, maxWidth: "100%", cursor: drawMode ? "crosshair" : "default" }}
-=======
                   style={{ position: "absolute", top: 0, left: 0, maxWidth: "100%", cursor: drawMode ? "crosshair" : (currentShape ? "zoom-in" : "default") }}
->>>>>>> 714a100 (Tamara's feedback changes)
                 />
               </div>
             </div>
           )}
 
           <div style={{ marginBottom: "15px" }}>
-<<<<<<< HEAD
-            <button
-              onClick={() => {
-                setDrawMode("circle");
-              }}
-              style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: drawMode === "circle" ? "#0056b3" : "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-            >
-              Draw Circle
-            </button>
-            <button
-              onClick={() => {
-                setDrawMode("rectangle");
-              }}
-              style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: drawMode === "rectangle" ? "#0056b3" : "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-            >
-              Draw Rectangle
-            </button>
-            <button
-              onClick={() => {
-                setCurrentShape(null);
-                setDrawMode(null);
-              }}
-              style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: "#ffc107", color: "black", border: "none", borderRadius: "4px", cursor: "pointer" }}
-            >
-              Clear Shape
-            </button>
-=======
             {imageSrc && (
               <>
                 <button
@@ -578,21 +524,10 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
                 </button>
               </>
             )}
->>>>>>> 714a100 (Tamara's feedback changes)
             <button
               onClick={() => replaceInputRef.current.click()}
               style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
             >
-<<<<<<< HEAD
-              Replace Image
-            </button>
-            <button
-              onClick={handleRemoveImage}
-              style={{ padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
-            >
-              Remove Image
-            </button>
-=======
               {imageSrc ? "Replace Image" : "Add Image"}
             </button>
             {imageSrc && (
@@ -603,7 +538,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
                 Remove Image
               </button>
             )}
->>>>>>> 714a100 (Tamara's feedback changes)
             <input
               ref={replaceInputRef}
               type="file"
@@ -630,18 +564,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
           )}
         </div>
 
-<<<<<<< HEAD
-        <div>
-          <h4>Text Content</h4>
-          <textarea
-            value={textContent}
-            onChange={(e) => setTextContent(e.target.value)}
-            placeholder="Enter the text that will be revealed as users scroll through this section..."
-            style={{ width: "100%", minHeight: "200px", padding: "10px", borderRadius: "4px", border: "1px solid #ddd" }}
-          />
-        </div>
-      </div>
-=======
         <div style={imageSrc ? undefined : { maxWidth: "900px", margin: "0 auto", width: "100%" }}>
           <h4 style={imageSrc ? undefined : { textAlign: "center" }}>Text Content</h4>
 
@@ -739,7 +661,6 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
           </div>
         </div>
       )}
->>>>>>> 714a100 (Tamara's feedback changes)
     </div>
   );
 }
@@ -798,15 +719,6 @@ function EditPage() {
     const presentationTitle = window.prompt("Enter a name for your presentation:", "My ScrolliTelli Story");
     const finalTitle = presentationTitle && presentationTitle.trim() ? presentationTitle.trim() : "ScrolliTelli Presentation";
 
-<<<<<<< HEAD
-    const escapeHtml = (text) => {
-      const div = document.createElement("div");
-      div.textContent = text;
-      return div.innerHTML;
-    };
-
-=======
->>>>>>> 714a100 (Tamara's feedback changes)
     let htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -825,13 +737,9 @@ function EditPage() {
     .blur-canvas.active { opacity: 1; }
     .text-sections { position: relative; z-index: 10; pointer-events: none; margin-left: 66.666%; width: 33.333%; }
     .text-section { min-height: 80vh; display: flex; align-items: center; padding: 40px 30px; pointer-events: auto; }
-<<<<<<< HEAD
-    .text-content { width: 100%; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 8px; font-size: 18px; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; backdrop-filter: blur(10px); }
-=======
     .text-content { width: 100%; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 8px; font-size: 18px; line-height: 1.8; word-wrap: break-word; overflow-wrap: break-word; backdrop-filter: blur(10px); }
     .text-content a { color: #66b3ff; }
     .text-content div, .text-content p { min-height: 1em; }
->>>>>>> 714a100 (Tamara's feedback changes)
     .transition-spacer { height: 60vh; pointer-events: none; }
     @media (max-width: 1024px) {
       .image-container { width: 100%; height: 50vh; }
@@ -861,11 +769,7 @@ function EditPage() {
 
     sectionsData.forEach((data, index) => {
       htmlContent += `      <div class="text-section" data-section="${index}">
-<<<<<<< HEAD
-        <div class="text-content">${escapeHtml(data.text)}</div>
-=======
         <div class="text-content">${sanitizeRichText(data.text)}</div>
->>>>>>> 714a100 (Tamara's feedback changes)
       </div>
 `;
       if (index < sectionsData.length - 1) {

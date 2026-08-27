@@ -55,13 +55,8 @@ function HomePage() {
 
   return (
     <div className="container">
-<<<<<<< HEAD
-      <nav className="navbar">
-        <h1 className="banner">ScrolliTelli Creation Tool</h1>
-=======
       <nav className="home-navbar">
         <h1 className="home-banner">ScrolliTelli Creation Tool</h1>
->>>>>>> 714a100 (Tamara's feedback changes)
       </nav>
       
       <div className="main-row">
@@ -80,17 +75,19 @@ function HomePage() {
           </div>
 
           <div className="options-div">
-<<<<<<< HEAD
-            <p className="text">How many images would you like to edit?</p>
-=======
             <p className="text">How many slides would you like to start with?</p>
->>>>>>> 714a100 (Tamara's feedback changes)
             <div className="selections">
               <input
                 type="number"
                 className="number-input"
+                min="0"
                 value={numImages}
-                onChange={(e) => setNumImages(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "" || Number(val) >= 0) {
+                    setNumImages(val);
+                  }
+                }}
               />
 
               <button
@@ -106,7 +103,7 @@ function HomePage() {
 
         <div className="right-column">
           <div className="preview">
-            <h3 className="img-label">Image will appear here:</h3>
+            <h3 className="img-label">{uploadedImage ? "Image preview" : "Image will appear here:"}</h3>
             <div className="image-container">
               {uploadedImage ? (
                 <img
