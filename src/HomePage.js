@@ -55,8 +55,13 @@ function HomePage() {
 
   return (
     <div className="container">
+<<<<<<< HEAD
       <nav className="navbar">
         <h1 className="banner">ScrolliTelli Creation Tool</h1>
+=======
+      <nav className="home-navbar">
+        <h1 className="home-banner">ScrolliTelli Creation Tool</h1>
+>>>>>>> 714a100 (Tamara's feedback changes)
       </nav>
       
       <div className="main-row">
@@ -75,7 +80,11 @@ function HomePage() {
           </div>
 
           <div className="options-div">
+<<<<<<< HEAD
             <p className="text">How many images would you like to edit?</p>
+=======
+            <p className="text">How many slides would you like to start with?</p>
+>>>>>>> 714a100 (Tamara's feedback changes)
             <div className="selections">
               <input
                 type="number"

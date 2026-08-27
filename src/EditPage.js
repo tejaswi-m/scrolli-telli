@@ -2,6 +2,59 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./EditPage.css";
 
+<<<<<<< HEAD
+=======
+const escapeHtml = (text) => {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+};
+
+// Only these tags are allowed to survive from a contentEditable field (typing,
+// our own Bold/Italic/Link insertions, or a pasted-as-plain-text paste never
+// produce anything else, but this is a defense-in-depth pass regardless).
+const ALLOWED_RICH_TEXT_TAGS = new Set(["B", "STRONG", "I", "EM", "A", "BR", "DIV", "P"]);
+
+const sanitizeRichText = (html) => {
+  const template = document.createElement("template");
+  template.innerHTML = html || "";
+
+  const clean = (parent) => {
+    Array.from(parent.childNodes).forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) return;
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        node.remove();
+        return;
+      }
+
+      clean(node);
+
+      if (!ALLOWED_RICH_TEXT_TAGS.has(node.tagName)) {
+        while (node.firstChild) parent.insertBefore(node.firstChild, node);
+        parent.removeChild(node);
+        return;
+      }
+
+      const href = node.tagName === "A" ? node.getAttribute("href") : null;
+      Array.from(node.attributes).forEach((attr) => node.removeAttribute(attr.name));
+
+      if (node.tagName === "A") {
+        if (href && /^(https?:|mailto:)/i.test(href.trim())) {
+          node.setAttribute("href", href.trim());
+          node.setAttribute("target", "_blank");
+          node.setAttribute("rel", "noopener noreferrer");
+        } else {
+          while (node.firstChild) parent.insertBefore(node.firstChild, node);
+          parent.removeChild(node);
+        }
+      }
+    });
+  };
+
+  clean(template.content);
+  return template.innerHTML;
+};
+>>>>>>> 714a100 (Tamara's feedback changes)
 
 function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDelete }) {
   const [imageSrc, setImageSrc] = useState(initialImage);
@@ -12,11 +65,135 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
   const [textContent, setTextContent] = useState("");
   const [blurAmount, setBlurAmount] = useState(2);
   const [deleted, setDeleted] = useState(false);
+<<<<<<< HEAD
+=======
+  const [showEnlarged, setShowEnlarged] = useState(false);
+  const [modalZoom, setModalZoom] = useState(2);
+>>>>>>> 714a100 (Tamara's feedback changes)
 
   const baseImgRef = useRef(null);
   const blurCanvasRef = useRef(null);
   const drawCanvasRef = useRef(null);
   const replaceInputRef = useRef(null);
+<<<<<<< HEAD
+=======
+  const modalCanvasRef = useRef(null);
+  const modalContainerRef = useRef(null);
+  const editableRef = useRef(null);
+
+  const MIN_MODAL_ZOOM = 1;
+  const MAX_MODAL_ZOOM = 6;
+
+  const syncTextFromEditable = () => {
+    const editable = editableRef.current;
+    if (!editable) return;
+    setTextContent(editable.innerHTML);
+  };
+
+  const getEditableSelectionRange = () => {
+    const editable = editableRef.current;
+    const sel = window.getSelection();
+    if (!editable || !sel || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    if (!editable.contains(range.commonAncestorContainer)) return null;
+    return { sel, range };
+  };
+
+  const placeCaretAfter = (sel, node) => {
+    const newRange = document.createRange();
+    newRange.setStartAfter(node);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+  };
+
+  const handleInlineFormat = (type) => {
+    const editable = editableRef.current;
+    if (!editable) return;
+    editable.focus();
+    const info = getEditableSelectionRange();
+    if (!info) return;
+    const { sel, range } = info;
+
+    const el = document.createElement(type === "bold" ? "strong" : "em");
+    if (range.collapsed) {
+      el.textContent = type === "bold" ? "bold text" : "italic text";
+      range.insertNode(el);
+      const newRange = document.createRange();
+      newRange.selectNodeContents(el);
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+    } else {
+      const contents = range.extractContents();
+      el.appendChild(contents);
+      range.insertNode(el);
+      placeCaretAfter(sel, el);
+    }
+
+    syncTextFromEditable();
+  };
+
+  const handleInsertLink = () => {
+    const editable = editableRef.current;
+    if (!editable) return;
+    editable.focus();
+    const info = getEditableSelectionRange();
+    if (!info) return;
+    const { sel, range } = info;
+
+    const url = window.prompt("Enter the URL:", "https://");
+    if (!url) return;
+    const trimmed = url.trim();
+    if (!/^(https?:|mailto:)/i.test(trimmed)) {
+      window.alert("Please enter a URL starting with http://, https://, or mailto:");
+      return;
+    }
+
+    const a = document.createElement("a");
+    a.href = trimmed;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+
+    if (range.collapsed) {
+      a.textContent = "link text";
+      range.insertNode(a);
+    } else {
+      const contents = range.extractContents();
+      a.appendChild(contents);
+      range.insertNode(a);
+    }
+    placeCaretAfter(sel, a);
+
+    syncTextFromEditable();
+  };
+
+  const handleEditablePaste = (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain");
+    const info = getEditableSelectionRange();
+    if (!info) return;
+    const { sel, range } = info;
+    range.deleteContents();
+    const textNode = document.createTextNode(text);
+    range.insertNode(textNode);
+    const newRange = document.createRange();
+    newRange.setStartAfter(textNode);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    syncTextFromEditable();
+  };
+
+  const handleEditableBlur = () => {
+    const editable = editableRef.current;
+    if (!editable) return;
+    const sanitized = sanitizeRichText(editable.innerHTML);
+    if (sanitized !== editable.innerHTML) {
+      editable.innerHTML = sanitized;
+    }
+    setTextContent(sanitized);
+  };
+>>>>>>> 714a100 (Tamara's feedback changes)
 
   useEffect(() => {
     if (baseImgRef.current && baseImgRef.current.complete) {
@@ -155,6 +332,86 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
     ctx.clearRect(0, 0, drawCanvasRef.current.width, drawCanvasRef.current.height);
   };
 
+<<<<<<< HEAD
+=======
+  const renderModalCanvas = () => {
+    requestAnimationFrame(() => {
+      if (!modalCanvasRef.current || !baseImgRef.current || !blurCanvasRef.current || !currentShape) return;
+
+      const displayWidth = blurCanvasRef.current.width;
+      const displayHeight = blurCanvasRef.current.height;
+      const naturalWidth = baseImgRef.current.naturalWidth || displayWidth;
+      const naturalHeight = baseImgRef.current.naturalHeight || displayHeight;
+      const scaleX = naturalWidth / displayWidth;
+      const scaleY = naturalHeight / displayHeight;
+
+      // Bounding box of the selected shape, in natural image pixel space.
+      let boxX, boxY, boxW, boxH;
+      if (currentShape.type === "circle") {
+        boxX = (currentShape.x - currentShape.radius) * scaleX;
+        boxY = (currentShape.y - currentShape.radius) * scaleY;
+        boxW = currentShape.radius * 2 * scaleX;
+        boxH = currentShape.radius * 2 * scaleY;
+      } else {
+        boxX = Math.min(currentShape.x, currentShape.x + currentShape.width) * scaleX;
+        boxY = Math.min(currentShape.y, currentShape.y + currentShape.height) * scaleY;
+        boxW = Math.abs(currentShape.width) * scaleX;
+        boxH = Math.abs(currentShape.height) * scaleY;
+      }
+
+      // Clamp the crop box to the image bounds.
+      const srcX = Math.max(0, boxX);
+      const srcY = Math.max(0, boxY);
+      const srcW = Math.min(boxW, naturalWidth - srcX);
+      const srcH = Math.min(boxH, naturalHeight - srcY);
+      if (srcW <= 0 || srcH <= 0) return;
+
+      const canvas = modalCanvasRef.current;
+      canvas.width = Math.round(srcW * modalZoom);
+      canvas.height = Math.round(srcH * modalZoom);
+
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+
+      if (currentShape.type === "circle") {
+        ctx.beginPath();
+        ctx.ellipse(canvas.width / 2, canvas.height / 2, canvas.width / 2, canvas.height / 2, 0, 0, 2 * Math.PI);
+        ctx.clip();
+      }
+
+      ctx.drawImage(baseImgRef.current, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+
+      if (modalContainerRef.current) {
+        const container = modalContainerRef.current;
+        container.scrollLeft = Math.max(0, (canvas.width - container.clientWidth) / 2);
+        container.scrollTop = Math.max(0, (canvas.height - container.clientHeight) / 2);
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (showEnlarged) {
+      renderModalCanvas();
+    }
+  }, [showEnlarged, modalZoom, currentShape]);
+
+  const handleOpenEnlarged = () => {
+    if (!currentShape) return;
+    setModalZoom(2);
+    setShowEnlarged(true);
+  };
+
+  const handleZoomIn = () => {
+    setModalZoom((z) => Math.min(MAX_MODAL_ZOOM, +(z + 0.5).toFixed(1)));
+  };
+
+  const handleZoomOut = () => {
+    setModalZoom((z) => Math.max(MIN_MODAL_ZOOM, +(z - 0.5).toFixed(1)));
+  };
+
+>>>>>>> 714a100 (Tamara's feedback changes)
   const handleReplaceImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -170,6 +427,12 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
     if (window.confirm("Are you sure you want to remove the image from this section? This will create a text-only section.")) {
       setImageSrc(null);
       setCurrentShape(null);
+<<<<<<< HEAD
+=======
+      setDrawMode(null);
+      setShowEnlarged(false);
+      setBlurAmount(2);
+>>>>>>> 714a100 (Tamara's feedback changes)
     }
   };
 
@@ -206,11 +469,25 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
         </div>
       </div>
 
+<<<<<<< HEAD
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
         <div>
           {imageSrc && (
             <div style={{ position: "relative", marginBottom: "15px" }}>
               <div style={{ position: "relative", display: "inline-block" }}>
+=======
+      <div style={{ display: "grid", gridTemplateColumns: imageSrc ? "2fr 1fr" : "1fr", gap: "20px" }}>
+        <div>
+          {imageSrc && (
+            <div style={{ position: "relative", marginBottom: "15px" }}>
+              <div
+                style={{ position: "relative", display: "inline-block" }}
+                onClick={() => {
+                  if (!drawMode) handleOpenEnlarged();
+                }}
+                title={currentShape ? "Click to view selected area" : ""}
+              >
+>>>>>>> 714a100 (Tamara's feedback changes)
                 <img
                   ref={baseImgRef}
                   src={imageSrc}
@@ -227,13 +504,18 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
+<<<<<<< HEAD
                   style={{ position: "absolute", top: 0, left: 0, maxWidth: "100%", cursor: drawMode ? "crosshair" : "default" }}
+=======
+                  style={{ position: "absolute", top: 0, left: 0, maxWidth: "100%", cursor: drawMode ? "crosshair" : (currentShape ? "zoom-in" : "default") }}
+>>>>>>> 714a100 (Tamara's feedback changes)
                 />
               </div>
             </div>
           )}
 
           <div style={{ marginBottom: "15px" }}>
+<<<<<<< HEAD
             <button
               onClick={() => {
                 setDrawMode("circle");
@@ -259,10 +541,49 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
             >
               Clear Shape
             </button>
+=======
+            {imageSrc && (
+              <>
+                <button
+                  onClick={() => {
+                    setDrawMode("circle");
+                  }}
+                  style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: drawMode === "circle" ? "#0056b3" : "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                >
+                  Draw Circle
+                </button>
+                <button
+                  onClick={() => {
+                    setDrawMode("rectangle");
+                  }}
+                  style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: drawMode === "rectangle" ? "#0056b3" : "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                >
+                  Draw Rectangle
+                </button>
+                <button
+                  onClick={() => {
+                    setCurrentShape(null);
+                    setDrawMode(null);
+                  }}
+                  style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: "#ffc107", color: "black", border: "none", borderRadius: "4px", cursor: "pointer" }}
+                >
+                  Clear Shape
+                </button>
+                <button
+                  onClick={handleOpenEnlarged}
+                  disabled={!currentShape}
+                  style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: currentShape ? "#17a2b8" : "#adb5bd", color: "white", border: "none", borderRadius: "4px", cursor: currentShape ? "pointer" : "not-allowed" }}
+                >
+                  View Selected Area
+                </button>
+              </>
+            )}
+>>>>>>> 714a100 (Tamara's feedback changes)
             <button
               onClick={() => replaceInputRef.current.click()}
               style={{ marginRight: "10px", padding: "8px 16px", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
             >
+<<<<<<< HEAD
               Replace Image
             </button>
             <button
@@ -271,6 +592,18 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
             >
               Remove Image
             </button>
+=======
+              {imageSrc ? "Replace Image" : "Add Image"}
+            </button>
+            {imageSrc && (
+              <button
+                onClick={handleRemoveImage}
+                style={{ padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}
+              >
+                Remove Image
+              </button>
+            )}
+>>>>>>> 714a100 (Tamara's feedback changes)
             <input
               ref={replaceInputRef}
               type="file"
@@ -297,6 +630,7 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
           )}
         </div>
 
+<<<<<<< HEAD
         <div>
           <h4>Text Content</h4>
           <textarea
@@ -307,6 +641,105 @@ function SectionEditor({ index, initialImage, onUpdate, onDelete, onAdd, canDele
           />
         </div>
       </div>
+=======
+        <div style={imageSrc ? undefined : { maxWidth: "900px", margin: "0 auto", width: "100%" }}>
+          <h4 style={imageSrc ? undefined : { textAlign: "center" }}>Text Content</h4>
+
+          <div style={{ marginBottom: "6px", display: "flex", gap: "6px" }}>
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); handleInlineFormat("bold"); }}
+              title="Bold"
+              style={{ width: "32px", height: "32px", fontWeight: "bold", backgroundColor: "#e9ecef", border: "1px solid #ced4da", borderRadius: "4px", cursor: "pointer" }}
+            >
+              B
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); handleInlineFormat("italic"); }}
+              title="Italic"
+              style={{ width: "32px", height: "32px", fontStyle: "italic", backgroundColor: "#e9ecef", border: "1px solid #ced4da", borderRadius: "4px", cursor: "pointer" }}
+            >
+              I
+            </button>
+            <button
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); handleInsertLink(); }}
+              title="Insert link"
+              style={{ height: "32px", padding: "0 10px", backgroundColor: "#e9ecef", border: "1px solid #ced4da", borderRadius: "4px", cursor: "pointer" }}
+            >
+              🔗 Link
+            </button>
+          </div>
+
+          <div style={{ position: "relative" }}>
+            {!textContent && (
+              <div style={{ position: "absolute", top: "10px", left: "10px", color: "#999", pointerEvents: "none" }}>
+                Enter the text that will be revealed as users scroll through this section...
+              </div>
+            )}
+            <div
+              ref={editableRef}
+              contentEditable
+              suppressContentEditableWarning
+              onInput={syncTextFromEditable}
+              onPaste={handleEditablePaste}
+              onBlur={handleEditableBlur}
+              style={{ width: "100%", minHeight: "200px", padding: "10px", borderRadius: "4px", border: "1px solid #ddd", backgroundColor: "white", outline: "none" }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {showEnlarged && (
+        <div
+          onClick={() => setShowEnlarged(false)}
+          style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", backgroundColor: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }}
+        >
+          <button
+            onClick={() => setShowEnlarged(false)}
+            style={{ position: "fixed", top: "20px", right: "30px", fontSize: "28px", lineHeight: 1, background: "none", border: "none", color: "white", cursor: "pointer", zIndex: 1001 }}
+            aria-label="Close selected area view"
+          >
+            &times;
+          </button>
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ position: "fixed", bottom: "30px", left: "50%", transform: "translateX(-50%)", display: "flex", alignItems: "center", gap: "10px", backgroundColor: "rgba(255,255,255,0.95)", padding: "8px 14px", borderRadius: "8px", zIndex: 1001 }}
+          >
+            <button
+              onClick={handleZoomOut}
+              disabled={modalZoom <= MIN_MODAL_ZOOM}
+              style={{ width: "36px", height: "36px", fontSize: "20px", lineHeight: 1, backgroundColor: modalZoom <= MIN_MODAL_ZOOM ? "#adb5bd" : "#343a40", color: "white", border: "none", borderRadius: "4px", cursor: modalZoom <= MIN_MODAL_ZOOM ? "not-allowed" : "pointer" }}
+              aria-label="Zoom out"
+            >
+              &minus;
+            </button>
+            <span style={{ minWidth: "48px", textAlign: "center", fontWeight: "bold" }}>{modalZoom.toFixed(1)}x</span>
+            <button
+              onClick={handleZoomIn}
+              disabled={modalZoom >= MAX_MODAL_ZOOM}
+              style={{ width: "36px", height: "36px", fontSize: "20px", lineHeight: 1, backgroundColor: modalZoom >= MAX_MODAL_ZOOM ? "#adb5bd" : "#343a40", color: "white", border: "none", borderRadius: "4px", cursor: modalZoom >= MAX_MODAL_ZOOM ? "not-allowed" : "pointer" }}
+              aria-label="Zoom in"
+            >
+              +
+            </button>
+          </div>
+
+          <div
+            ref={modalContainerRef}
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "90vw", maxHeight: "90vh", overflow: "auto" }}
+          >
+            <canvas
+              ref={modalCanvasRef}
+              style={{ display: "block" }}
+            />
+          </div>
+        </div>
+      )}
+>>>>>>> 714a100 (Tamara's feedback changes)
     </div>
   );
 }
@@ -365,12 +798,15 @@ function EditPage() {
     const presentationTitle = window.prompt("Enter a name for your presentation:", "My ScrolliTelli Story");
     const finalTitle = presentationTitle && presentationTitle.trim() ? presentationTitle.trim() : "ScrolliTelli Presentation";
 
+<<<<<<< HEAD
     const escapeHtml = (text) => {
       const div = document.createElement("div");
       div.textContent = text;
       return div.innerHTML;
     };
 
+=======
+>>>>>>> 714a100 (Tamara's feedback changes)
     let htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -389,7 +825,13 @@ function EditPage() {
     .blur-canvas.active { opacity: 1; }
     .text-sections { position: relative; z-index: 10; pointer-events: none; margin-left: 66.666%; width: 33.333%; }
     .text-section { min-height: 80vh; display: flex; align-items: center; padding: 40px 30px; pointer-events: auto; }
+<<<<<<< HEAD
     .text-content { width: 100%; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 8px; font-size: 18px; line-height: 1.8; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; backdrop-filter: blur(10px); }
+=======
+    .text-content { width: 100%; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 8px; font-size: 18px; line-height: 1.8; word-wrap: break-word; overflow-wrap: break-word; backdrop-filter: blur(10px); }
+    .text-content a { color: #66b3ff; }
+    .text-content div, .text-content p { min-height: 1em; }
+>>>>>>> 714a100 (Tamara's feedback changes)
     .transition-spacer { height: 60vh; pointer-events: none; }
     @media (max-width: 1024px) {
       .image-container { width: 100%; height: 50vh; }
@@ -419,7 +861,11 @@ function EditPage() {
 
     sectionsData.forEach((data, index) => {
       htmlContent += `      <div class="text-section" data-section="${index}">
+<<<<<<< HEAD
         <div class="text-content">${escapeHtml(data.text)}</div>
+=======
+        <div class="text-content">${sanitizeRichText(data.text)}</div>
+>>>>>>> 714a100 (Tamara's feedback changes)
       </div>
 `;
       if (index < sectionsData.length - 1) {
